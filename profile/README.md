@@ -44,7 +44,6 @@ Finally, when possible, a unified input csv file is used across the different wo
 
 - Variant association
   - select-cohort-variants
-  - tabulate-gnomad-variants
   - test-gene-burden
   - identify-associated-loci
   - infer-cohort-ancestry
@@ -54,9 +53,9 @@ Finally, when possible, a unified input csv file is used across the different wo
   - identify-family-sharing
 
 - Data processing
-  - annotate-vcf-vep
+  - annotate-vcf-variants
   - demultiplex-bcl-files 
-  - call-cnv-arrays
+  - call-cnv-consensus
   - download-source-files
 
 ### Testing
