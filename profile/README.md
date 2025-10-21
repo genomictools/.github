@@ -1,5 +1,7 @@
 ## **genomictools**: a suite of worfkows for scalable genomics data analysis. 
 
+![Diagram](../genomictools-diagram.drawio.png)
+
 ### Summary
 
 To analyze genomics data at scale, the use of processing pipelines and specialized tools is needed.
