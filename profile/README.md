@@ -59,6 +59,10 @@ Finally, when possible, a unified input csv file is used across the different wo
   - demultiplex-bcl-files 
   - call-cnv-consensus
   - download-source-files
+ 
+- Data integeration
+  - infer-heterozygosity-loss
+  - quantify-trait-loci
 
 ### Testing
 
