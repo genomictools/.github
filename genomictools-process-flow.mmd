@@ -1,0 +1,136 @@
+%%metro title: process-flow
+%%metro style: nfcore
+%%metro legend: none
+
+%% conda activate nf-metro-env
+%% nf-metro render genomictools-process-flow.mmd 
+
+%%metro files: germline_in  | VCF | Germline SNV    | banner
+%%metro files: somatic_in   | VCF | Somatic SNV     | banner
+%%metro files: pop          | VCF | Population      | banner
+%%metro file: signal        | GTC | Arrays          | banner
+%%metro file: exome         | BAM | Exomes          | banner
+%%metro file: lr            | BAM | Longreads       | banner
+%%metro file: rna           | TXT | Expression
+%%metro file: ped           | PED | Pedigree
+
+%%metro off_track: somatic_in,rna
+
+%%metro permissive: true
+
+%%metro line: family        |  Germline Variants | #2196F3
+%%metro line: population    |  Germline Variants | #2196F3
+%%metro line: integration   |  Germline Variants | #2196F3
+%%metro line: ancestry      |  Germline Variants | #f3217c
+%%metro line: ancestry2     |  Germline Variants | #f3217c
+%%metro line: calls         |  Germline Variants | #21f33a
+%%metro line: calls2        |  Germline Variants | #21f33a
+%%metro line: calls3        |  Germline Variants | #21f33a
+%%metro line: pedigree      | Pedigree Data      | #9C27B0
+%%metro line: somatic       | Somatic Variants   | #FF9800
+%%metro line: expression    | RNA Data           | #9eaf4c
+
+%%metro marker_legend: circle       | Process
+%%metro marker_legend: square       | Merge
+%%metro marker_legend: square, fill | Output
+
+%%metro marker: germline_ped        | square
+%%metro marker: germline_somatic    | square
+%%metro marker: germline_rna        | square
+%%metro marker: germline_ancestry   | square
+%%metro marker: burden              | square, fill
+%%metro marker: association         | square, fill
+%%metro marker: linkage             | square, fill
+%%metro marker: sharing             | square, fill
+%%metro marker: loh                 | square, fill
+%%metro marker: eqtl                | square, fill
+
+%%metro grid: variant_calling      | 0,0
+%%metro grid: annotation_filtering | 1,0
+%%metro grid: family_studies       | 2,0
+%%metro grid: ancestry_analysis    | 2,1
+%%metro grid: data_integration     | 1,1
+%%metro grid: population_studies   | 2,2
+
+graph LR
+    subgraph annotation_filtering ["Variant Annotation & Filtering"]
+        annotate ["Annotate"]
+        convert ["Convert"]
+        filter ["Filter"]
+        select ["Select"]
+
+        germline_in --> | family,population,integration  | annotate
+        annotate --> | family,population,integration,calls  | convert
+        convert --> | family,population,integration,calls,ancestry  | filter
+        filter --> | family,population,integration,calls,ancestry  | select
+
+        pop --> | ancestry | convert
+    end
+
+    subgraph variant_calling ["Variant Calling & Discovery"]
+        adjust ["Adjust"]
+        sv ["Structural Variants"]
+        signal -->| calls | adjust
+        adjust --> | calls | sv
+
+        exome --> | calls2 | sv
+        lr --> | calls3 | sv
+        sv --> | calls | annotate
+    end
+
+    subgraph family_studies ["Family Studies"]
+        ped ["Pedigree"]
+        haplotype ["Haplotype"]
+        linkage ["Linkage"]
+        classify ["Classify"]
+        sharing ["Sharing"]
+        germline_ped [ ]
+
+        select --> | family | germline_ped
+
+        ped --> | pedigree | germline_ped
+        germline_ped --> | family,pedigree | haplotype
+        haplotype --> | family,pedigree | linkage
+
+        germline_ped --> | family,pedigree | classify
+        classify --> | family,pedigree | sharing
+    end
+
+    subgraph population_studies ["Population Studies"]
+        germline_ancestry [""]
+        association ["Association"]
+        burden ["Burden"]
+
+        select --> | population,calls | germline_ancestry
+        germline_ancestry --> | population,ancestry,calls | association
+        germline_ancestry --> | population,ancestry,calls | burden
+    end
+
+    subgraph data_integration ["Data Integration"]
+        extract ["Extract"]
+        loh ["LOH"]
+        test ["Test"]
+        eqtl ["eQTL"]
+        germline_somatic [""]
+        germline_rna [""]
+
+        germline_in --> | integration | germline_somatic
+        somatic_in --> | somatic | germline_somatic
+        germline_somatic --> | integration,somatic | extract
+        extract --> | integration,somatic | loh
+
+        germline_in --> | integration | germline_rna
+        rna --> | expression | germline_rna
+        germline_rna --> | integration,expression | test
+        test --> | integration,expression | eqtl
+    end
+
+    subgraph ancestry_analysis ["Ancestry Analysis"]
+        %%metro direction: RL
+        %%metro entry: right | ancestry
+        select --> | ancestry | prune
+        prune --> | ancestry | scale
+        scale --> | ancestry | ancestry
+        ancestry --> | ancestry | germline_ancestry
+    end
+
