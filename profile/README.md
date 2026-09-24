@@ -1,6 +1,6 @@
 ## **genomictools**: a suite of workflows for scalable genomics data analysis
 
-![Diagram](./genomictools-process-flow.svg)
+![Diagram](../genomictools-process-flow.svg)
 
 ### Summary
 
