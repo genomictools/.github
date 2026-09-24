@@ -128,6 +128,10 @@ graph LR
     subgraph ancestry_analysis ["Ancestry Analysis"]
         %%metro direction: RL
         %%metro entry: right | ancestry
+        prune ["Prune"]
+        scale ["Scale"]
+        ancestry ["Ancestry"]
+
         select --> | ancestry | prune
         prune --> | ancestry | scale
         scale --> | ancestry | ancestry
