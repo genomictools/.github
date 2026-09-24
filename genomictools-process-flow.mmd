@@ -61,10 +61,10 @@ graph LR
 
         germline_in --> | family,population,integration  | annotate
         annotate --> | family,population,integration,calls  | convert
-        convert --> | family,population,integration,calls,ancestry  | filter
-        filter --> | family,population,integration,calls,ancestry  | select
+        convert --> | family,population,integration,calls,ancestry,ancestry2  | filter
+        filter --> | family,population,integration,calls,ancestry,ancestry2  | select
 
-        pop --> | ancestry | convert
+        pop --> | ancestry,ancestry2 | convert
     end
 
     subgraph variant_calling ["Variant Calling & Discovery"]
@@ -99,11 +99,13 @@ graph LR
     subgraph population_studies ["Population Studies"]
         germline_ancestry [""]
         association ["Association"]
+        prioritize ["Prioritize"]
         burden ["Burden"]
 
         select --> | population,calls | germline_ancestry
-        germline_ancestry --> | population,ancestry,calls | association
-        germline_ancestry --> | population,ancestry,calls | burden
+        germline_ancestry --> | population,ancestry,ancestry2,calls | prioritize
+        prioritize --> | population,ancestry,ancestry2,calls | burden
+        prioritize --> | population,ancestry,ancestry2,calls | association
     end
 
     subgraph data_integration ["Data Integration"]
@@ -127,14 +129,17 @@ graph LR
 
     subgraph ancestry_analysis ["Ancestry Analysis"]
         %%metro direction: RL
-        %%metro entry: right | ancestry
-        prune ["Prune"]
+        %%metro entry: right | ancestry,ancestry2
+        tabulate ["Tabulate"]
         scale ["Scale"]
         ancestry ["Ancestry"]
 
-        select --> | ancestry | prune
-        prune --> | ancestry | scale
+        select --> | ancestry,ancestry2 | _h1
+        _h1 --> | ancestry | scale
         scale --> | ancestry | ancestry
-        ancestry --> | ancestry | germline_ancestry
+        ancestry --> | ancestry | _h2
+        _h1 --> | ancestry2 | tabulate
+        tabulate --> | ancestry2 | _h2
+        _h2 --> | ancestry,ancestry2 | germline_ancestry
     end
 
