@@ -1,4 +1,4 @@
-%%metro title: process-flow
+%%metro title: genomictools
 %%metro style: nfcore
 %%metro legend: none
 
@@ -7,28 +7,30 @@
 
 %%metro files: germline_in  | VCF | Germline SNV    | banner
 %%metro files: somatic_in   | VCF | Somatic SNV     | banner
-%%metro files: pop          | VCF | Population      | banner
-%%metro file: signal        | GTC | Arrays          | banner
+%%metro files: pop          | VCF | Population
+%%metro file: arrays        | GTC | Arrays          | banner
 %%metro file: exome         | BAM | Exomes          | banner
 %%metro file: lr            | BAM | Longreads       | banner
+%%metro file: pfb           | TXT | PFB
 %%metro file: rna           | TXT | Expression
 %%metro file: ped           | PED | Pedigree
 
-%%metro off_track: somatic_in,rna
+%%metro off_track: somatic_in,rna,kinship
 
 %%metro permissive: true
 
-%%metro line: family        |  Germline Variants | #2196F3
-%%metro line: population    |  Germline Variants | #2196F3
-%%metro line: integration   |  Germline Variants | #2196F3
-%%metro line: ancestry      |  Germline Variants | #f3217c
-%%metro line: ancestry2     |  Germline Variants | #f3217c
-%%metro line: calls         |  Germline Variants | #21f33a
-%%metro line: calls2        |  Germline Variants | #21f33a
-%%metro line: calls3        |  Germline Variants | #21f33a
+%%metro line: family        | Germline Variants  | #2196F3
+%%metro line: population    | Germline Variants  | #2196F3
+%%metro line: integration   | Germline Variants  | #2196F3
+%%metro line: ancestry      | Germline Variants  | #f3217c
+%%metro line: ancestry2     | Germline Variants  | #f3217c
+%%metro line: calls         | Germline Variants  | #21f33a
+%%metro line: calls2        | Germline Variants  | #21f33a
+%%metro line: calls3        | Germline Variants  | #21f33a
 %%metro line: pedigree      | Pedigree Data      | #9C27B0
 %%metro line: somatic       | Somatic Variants   | #FF9800
 %%metro line: expression    | RNA Data           | #9eaf4c
+%%metro line: frequency     | Pop Allele Freq    | #af4c8b
 
 %%metro marker_legend: circle       | Process
 %%metro marker_legend: square       | Merge
@@ -38,10 +40,12 @@
 %%metro marker: germline_somatic    | square
 %%metro marker: germline_rna        | square
 %%metro marker: germline_ancestry   | square
+%%metro marker: coverage            | square
 %%metro marker: burden              | square, fill
 %%metro marker: association         | square, fill
 %%metro marker: linkage             | square, fill
-%%metro marker: sharing             | square, fill
+%%metro marker: segregation         | square, fill
+%%metro marker: kinship             | square, fill
 %%metro marker: loh                 | square, fill
 %%metro marker: eqtl                | square, fill
 
@@ -69,31 +73,41 @@ graph LR
 
     subgraph variant_calling ["Variant Calling & Discovery"]
         adjust ["Adjust"]
+        coverage ["Coverage"]
         sv ["Structural Variants"]
-        signal -->| calls | adjust
-        adjust --> | calls | sv
+        
+        arrays -->| calls | adjust
+        exome --> | calls | coverage
+        lr --> | calls | coverage
+        pfb --> | frequency | coverage
+        pfb --> | frequency | adjust
+        
+        coverage --> | calls,frequency | sv
+        adjust --> | calls,frequency | sv
 
-        exome --> | calls2 | sv
-        lr --> | calls3 | sv
+        
         sv --> | calls | annotate
     end
 
     subgraph family_studies ["Family Studies"]
         ped ["Pedigree"]
         haplotype ["Haplotype"]
+        kinship ["Kinship"]
         linkage ["Linkage"]
         classify ["Classify"]
-        sharing ["Sharing"]
+        segregation ["Segregation"]
         germline_ped [ ]
 
-        select --> | family | germline_ped
+        select --> | family | _h4
+        _h4 --> | family | germline_ped
+        _h4 --> | family | kinship
 
         ped --> | pedigree | germline_ped
         germline_ped --> | family,pedigree | haplotype
         haplotype --> | family,pedigree | linkage
 
         germline_ped --> | family,pedigree | classify
-        classify --> | family,pedigree | sharing
+        classify --> | family,pedigree | segregation
     end
 
     subgraph population_studies ["Population Studies"]
@@ -142,4 +156,3 @@ graph LR
         tabulate --> | ancestry2 | _h2
         _h2 --> | ancestry,ancestry2 | germline_ancestry
     end
-
